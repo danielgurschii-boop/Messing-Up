@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered CV | PubGMobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Sohne:wght@400;600;700&display=swap');
+
+        :root {
+            --primary: #00d9ff;
+            --secondary: #ff006e;
+            --accent: #8338ec;
+            --dark-bg: #0a0e27;
+            --card-bg: #1a1f3a;
+            --text-primary: #e0e0ff;
+            --text-secondary: #a0a0c0;
+            --glow: rgba(0, 217, 255, 0.3);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Particle Background */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 50px;
+            padding: 25px 30px;
+            background: rgba(26, 31, 58, 0.4);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 217, 255, 0.1);
+            animation: slideInDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.3s ease;
+        }
+
+        header:hover {
+            border-color: rgba(0, 217, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.15);
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #00d9ff, #ff006e, #8338ec);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Sohne', sans-serif;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .language-selector {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            color: var(--primary);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .language-selector:hover {
+            background: rgba(0, 217, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        button {
+            padding: 11px 22px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d9ff, #0099cc);
+            color: #000;
+            font-weight: 700;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(100, 116, 139, 0.2);
+            color: var(--text-primary);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(100, 116, 139, 0.4);
+            border-color: rgba(148, 163, 184, 0.5);
+        }
+
+        .btn-danger {
+            background: rgba(255, 0, 110, 0.2);
+            color: #ff6b9d;
+            border: 1px solid rgba(255, 0, 110, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 0, 110, 0.3);
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.2);
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(131, 56, 236, 0.2));
+            color: var(--primary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 217, 255, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(0, 217, 255, 0.6); }
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        .section {
+            background: rgba(26, 31, 58, 0.3);
+            border-radius: 16px;
+            padding: 35px;
+            border: 1px solid rgba(0, 217, 255, 0.1);
+            backdrop-filter: blur(20px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: grab;
+            animation: slideInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section:nth-child(1) { animation-delay: 0.1s; }
+        .section:nth-child(2) { animation-delay: 0.2s; }
+        .section:nth-child(3) { animation-delay: 0.3s; }
+        .section:nth-child(4) { animation-delay: 0.4s; }
+        .section:nth-child(5) { animation-delay: 0.5s; }
+        .section:nth-child(6) { animation-delay: 0.6s; }
+        .section:nth-child(7) { animation-delay: 0.7s; }
+
+        .section:hover {
+            border-color: rgba(0, 217, 255, 0.3);
+            transform: translateZ(50px);
+        }
+
+        .section.clicked {
+            animation: glow-pulse 0.6s ease;
+        }
+
+        @keyframes glow-pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 217, 255, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 20px rgba(0, 217, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 217, 255, 0);
+            }
+        }
+
+        .section h2 {
+            font-size: 24px;
+            margin-bottom: 25px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+        }
+
+        .section h2::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(0, 217, 255, 0.3), transparent);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 13px 16px;
+            margin-bottom: 14px;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="file"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: rgba(0, 217, 255, 0.6);
+            background: rgba(15, 23, 42, 0.7);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 110px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(131, 56, 236, 0.2));
+            color: var(--primary);
+            border: 1.5px solid rgba(0, 217, 255, 0.4);
+            padding: 12px 20px;
+            margin-top: 12px;
+            font-weight: 700;
+        }
+
+        .add-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.3), rgba(131, 56, 236, 0.3));
+            border-color: rgba(0, 217, 255, 0.6);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+        }
+
+        .item {
+            background: rgba(15, 23, 42, 0.3);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border-left: 3px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .item:hover {
+            background: rgba(15, 23, 42, 0.5);
+            transform: translateX(5px);
+        }
+
+        .item h3 {
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .item-meta {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-bottom: 9px;
+            font-weight: 600;
+        }
+
+        .item-description {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .btn-edit, .btn-delete {
+            padding: 7px 14px;
+            font-size: 12px;
+            border: 1px solid;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-edit {
+            background: rgba(0, 217, 255, 0.15);
+            color: var(--primary);
+            border-color: rgba(0, 217, 255, 0.3);
+        }
+
+        .btn-edit:hover {
+            background: rgba(0, 217, 255, 0.25);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
+        }
+
+        .btn-delete {
+            background: rgba(255, 0, 110, 0.15);
+            color: #ff6b9d;
+            border-color: rgba(255, 0, 110, 0.3);
+        }
+
+        .btn-delete:hover {
+            background: rgba(255, 0, 110, 0.25);
+            box-shadow: 0 0 15px rgba(255, 0, 110, 0.2);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: rgba(15, 23, 42, 0.3);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 217, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            border-color: rgba(0, 217, 255, 0.4);
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        .profile-image-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+            margin: 0 auto;
+            display: block;
+        }
+
+        .image-upload-label {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #000;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .image-upload-label:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 217, 255, 0.4);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 35px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 22px;
+            background: linear-gradient(135deg, #00d9ff, #ff006e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 22px;
+            justify-content: flex-end;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 13px 16px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: rgba(255, 0, 110, 0.6);
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .section-placeholder {
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .success-message, .error-message {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            animation: slideDown 0.4s ease;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .success-message {
+            background: rgba(0, 217, 255, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+        }
+
+        .error-message {
+            background: rgba(255, 0, 110, 0.15);
+            color: #ff6b9d;
+            border: 1px solid rgba(255, 0, 110, 0.3);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .skill-tag, .hobby-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(131, 56, 236, 0.15));
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 13px;
+            margin: 6px 8px 6px 0;
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover, .hobby-tag:hover {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.25), rgba(131, 56, 236, 0.25));
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .header-right {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .main-content {
+                gap: 16px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .section h2 {
+                font-size: 18px;
+                gap: 8px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+
+            button {
+                padding: 9px 16px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Canvas Background -->
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="container">
+        <header id="mainHeader">
+            <div>
+                <h1>✨ CV.exe</h1>
+            </div>
+            <div class="header-right">
+                <select id="languageSelect" class="language-selector">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="ro">🇷🇴 Română</option>
+                    <option value="ru">🇷🇺 Русский</option>
+                </select>
+                <div class="mode-toggle">
+                    <span id="adminBadge" class="admin-badge hidden">🔐 ADMIN MODE</span>
+                    <button id="deleteAllBtn" class="btn-danger hidden">🗑️ Clear All</button>
+                    <button id="editModeBtn" class="btn-primary">🔓 Unlock</button>
+                    <button id="saveModeBtn" class="btn-primary hidden">💾 Save</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Personal Info Section -->
+            <section class="section" id="personalSection">
+                <h2>👤 <span class="lang-text" data-en="Personal Info" data-ro="Informații Personale" data-ru="Личная информация">Personal Info</span></h2>
+                <div id="personalView" class="tab-content"></div>
+                <div id="personalEdit" class="tab-content hidden"></div>
+            </section>
+
+            <!-- About Me Section -->
+            <section class="section" id="aboutSection">
+                <h2>📝 <span class="lang-text" data-en="About Me" data-ro="Despre Mine" data-ru="О мне">About Me</span></h2>
+                <div id="aboutView" class="tab-content"></div>
+                <div id="aboutEdit" class="tab-content hidden"></div>
+            </section>
+
+            <!-- Education Section -->
+            <section class="section" id="educationSection">
+                <h2>🎓 <span class="lang-text" data-en="Education" data-ro="Educație" data-ru="Образование">Education</span></h2>
+                <div id="educationView" class="tab-content"></div>
+                <div id="educationEdit" class="tab-content hidden"></div>
+            </section>
+
+            <!-- Technical Skills Section -->
+            <section class="section" id="skillsSection">
+                <h2>💻 <span class="lang-text" data-en="Technical Skills" data-ro="Competențe Tehnice" data-ru="Технические навыки">Technical Skills</span></h2>
+                <div id="skillsView" class="tab-content"></div>
+                <div id="skillsEdit" class="tab-content hidden"></div>
+            </section>
+
+            <!-- Projects Section -->
+            <section class="section" id="projectsSection">
+                <h2>🚀 <span class="lang-text" data-en="Projects" data-ro="Proiecte" data-ru="Проекты">Projects</span></h2>
+                <div id="projectsView" class="tab-content"></div>
+                <div id="projectsEdit" class="tab-content hidden"></div>
+            </section>
+
+            <!-- Languages Section -->
+            <section class="section" id="languagesSection">
+                <h2>🌐 <span class="lang-text" data-en="Languages" data-ro="Limbi Străine" data-ru="Языки">Languages</span></h2>
+                <div id="languagesView" class="tab-content"></div>
+                <div id="languagesEdit" class="tab-content hidden"></div>
+            </section>
+
+            <!-- Hobbies Section -->
+            <section class="section" id="hobbiesSection">
+                <h2>🎯 <span class="lang-text" data-en="Hobbies" data-ro="Hobby-uri" data-ru="Хобби">Hobbies</span></h2>
+                <div id="hobbiesView" class="tab-content"></div>
+                <div id="hobbiesEdit" class="tab-content hidden"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">🔐 <span class="lang-text" data-en="Admin Access" data-ro="Acces Admin" data-ru="Доступ администратора">Admin Access</span></div>
+            <div class="password-prompt">
+                <label for="adminPassword" class="lang-text" data-en="Enter Admin Password:" data-ro="Introduceți parola de admin:" data-ru="Введите пароль администратора:">Enter Admin Password:</label>
+                <input type="password" id="adminPassword" class="password-input" placeholder="••••••••">
+                <div id="passwordError" class="error-message hidden" style="margin-top: 10px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closePasswordModal()" class="btn-secondary">Cancel</button>
+                <button onclick="verifyPassword()" class="btn-primary">Verify</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete All Confirmation Modal -->
+    <div id="deleteAllModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" style="color: #ff6b9d;">⚠️ Delete Entire CV</div>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6;">
+                Are you absolutely sure? This will permanently delete <strong>ALL your CV data</strong> including personal info, education, projects, skills, and profile photo. This action cannot be undone!
+            </p>
+            <div class="form-group">
+                <label>Type "DELETE" to confirm:</label>
+                <input type="text" id="deleteConfirmInput" placeholder="Type DELETE here" style="border-color: rgba(255, 0, 110, 0.4);">
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeDeleteModal()" class="btn-secondary">Cancel</button>
+                <button onclick="confirmDeleteAll()" class="btn-danger">🗑️ Delete Everything</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== LANGUAGES ====================
+        const translations = {
+            en: {
+                "Personal Info": "Personal Info",
+                "Informații Personale": "Personal Info",
+                "Личная информация": "Personal Info",
+                "About Me": "About Me",
+                "Despre Mine": "About Me",
+                "О мне": "About Me",
+                "Education": "Education",
+                "Educație": "Education",
+                "Образование": "Education",
+                "Technical Skills": "Technical Skills",
+                "Competențe Tehnice": "Technical Skills",
+                "Технические навыки": "Technical Skills",
+                "Projects": "Projects",
+                "Proiecte": "Projects",
+                "Проекты": "Projects",
+                "Languages": "Languages",
+                "Limbi Străine": "Languages",
+                "Языки": "Languages",
+                "Hobbies": "Hobbies",
+                "Hobby-uri": "Hobbies",
+                "Хобби": "Hobbies",
+            },
+            ro: {
+                "Personal Info": "Informații Personale",
+                "About Me": "Despre Mine",
+                "Education": "Educație",
+                "Technical Skills": "Competențe Tehnice",
+                "Projects": "Proiecte",
+                "Languages": "Limbi Străine",
+                "Hobbies": "Hobby-uri",
+                "Add Education": "Adăugați Educație",
+                "Full Name": "Numele complet",
+                "Email": "E-mail",
+                "Phone": "Telefon",
+                "Location": "Locație",
+                "Enter Admin Password:": "Introduceți parola de admin:",
+                "Admin Access": "Acces Admin"
+            },
+            ru: {
+                "Personal Info": "Личная информация",
+                "About Me": "О мне",
+                "Education": "Образование",
+                "Technical Skills": "Технические навыки",
+                "Projects": "Проекты",
+                "Languages": "Языки",
+                "Hobbies": "Хобби",
+                "Add Education": "Добавить образование",
+                "Full Name": "Полное имя",
+                "Email": "Электронная почта",
+                "Phone": "Телефон",
+                "Location": "Место",
+                "Enter Admin Password:": "Введите пароль администратора:",
+                "Admin Access": "Доступ администратора"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-text').forEach(el => {
+                el.textContent = el.getAttribute(`data-${lang}`);
+            });
+        }
+
+        document.getElementById('languageSelect').addEventListener('change', (e) => {
+            changeLanguage(e.target.value);
+        });
+
+        // ==================== DEFAULT DATA ====================
+        const DEFAULT_DATA = {
+            profileImage: null,
+            personal: {
+                fullName: "John Doe",
+                email: "john@example.com",
+                phone: "+1 (555) 123-4567",
+                location: "New York, USA",
+                linkedin: "",
+                github: ""
+            },
+            about: "A passionate software developer with expertise in creating innovative solutions. I love learning new technologies and collaborating with amazing teams to build products that make a difference.",
+            education: [
+                {
+                    id: 1,
+                    school: "University of Technology",
+                    degree: "Bachelor of Computer Science",
+                    year: "2020 - 2024",
+                    description: "Focus on web development and software engineering"
+                }
+            ],
+            skills: [
+                { id: 1, name: "React" },
+                { id: 2, name: "JavaScript" },
+                { id: 3, name: "CSS3" },
+                { id: 4, name: "Node.js" }
+            ],
+            projects: [
+                {
+                    id: 1,
+                    title: "AI-Powered CV Generator",
+                    description: "Built a web application that helps users create interactive CVs with AI assistance",
+                    technologies: "React, Node.js, OpenAI API"
+                }
+            ],
+            languages: [
+                { id: 1, name: "English", level: "Native" },
+                { id: 2, name: "Spanish", level: "Fluent" }
+            ],
+            hobbies: [
+                { id: 1, name: "Reading" },
+                { id: 2, name: "Coding" },
+                { id: 3, name: "Photography" }
+            ]
+        };
+
+        const ADMIN_PASSWORD = "PubGM0bil3";
+        let isEditMode = false;
+        let isAdmin = false;
+        let cvData = JSON.parse(localStorage.getItem('cvData')) || DEFAULT_DATA;
+
+        // ==================== PARTICLE BACKGROUND ====================
+        function initParticles() {
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const particleCount = Math.min(50, Math.floor(window.innerWidth / 10));
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 0.5;
+                    this.speedX = Math.random() * 0.5 - 0.25;
+                    this.speedY = Math.random() * 0.5 - 0.25;
+                    this.opacity = Math.random() * 0.5 + 0.2;
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x > canvas.width) this.x = 0;
+                    if (this.x < 0) this.x = canvas.width;
+                    if (this.y > canvas.height) this.y = 0;
+                    if (this.y < 0) this.y = canvas.height;
+                }
+
+                draw() {
+                    ctx.fillStyle = `rgba(0, 217, 255, ${this.opacity})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function drawConnections() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < 150) {
+                            ctx.strokeStyle = `rgba(0, 217, 255, ${0.2 * (1 - distance / 150)})`;
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.fillStyle = 'rgba(10, 14, 39, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                drawConnections();
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        // ==================== CURSOR INTERACTION ====================
+        function setupCursorInteraction() {
+            document.addEventListener('mousemove', (e) => {
+                const sections = document.querySelectorAll('.section');
+                sections.forEach(section => {
+                    const rect = section.getBoundingClientRect();
+                    const distX = e.clientX - (rect.left + rect.width / 2);
+                    const distY = e.clientY - (rect.top + rect.height / 2);
+                    const distance = Math.sqrt(distX * distX + distY * distY);
+                    const maxDistance = 300;
+                    const influence = Math.max(0, 1 - distance / maxDistance);
+                    const scaleAmount = 1 + influence * 0.08;
+                    const rotateAmount = influence * 8;
+
+                    section.style.transform = `perspective(1000px) rotateX(${-distY * 0.02 * influence}deg) rotateY(${distX * 0.02 * influence}deg) scale(${scaleAmount})`;
+                });
+            });
+
+            document.addEventListener('click', (e) => {
+                const section = e.target.closest('.section');
+                if (section) {
+                    section.classList.add('clicked');
+                    setTimeout(() => section.classList.remove('clicked'), 600);
+                }
+            });
+        }
+
+        // ==================== INITIALIZATION ====================
+        function init() {
+            initParticles();
+            setupCursorInteraction();
+            renderAllSections();
+            setupEventListeners();
+            checkAdminStatus();
+
+            // Add section click animation
+            document.querySelectorAll('.section').forEach(section => {
+                section.addEventListener('click', function() {
+                    this.style.cursor = 'grabbing';
+                });
+                section.addEventListener('mouseup', function() {
+                    this.style.cursor = 'grab';
+                });
+            });
+        }
+
+        function setupEventListeners() {
+            document.getElementById('editModeBtn').addEventListener('click', requestAdminAccess);
+            document.getElementById('saveModeBtn').addEventListener('click', saveAndLock);
+            document.getElementById('deleteAllBtn').addEventListener('click', openDeleteModal);
+            document.getElementById('adminPassword').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') verifyPassword();
+            });
+            document.getElementById('deleteConfirmInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') confirmDeleteAll();
+            });
+        }
+
+        // ==================== ADMIN AUTHENTICATION ====================
+        function requestAdminAccess() {
+            document.getElementById('passwordModal').classList.add('active');
+            document.getElementById('adminPassword').focus();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('active');
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('passwordError').classList.add('hidden');
+        }
+
+        function openDeleteModal() {
+            document.getElementById('deleteAllModal').classList.add('active');
+            document.getElementById('deleteConfirmInput').value = '';
+            document.getElementById('deleteConfirmInput').focus();
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteAllModal').classList.remove('active');
+            document.getElementById('deleteConfirmInput').value = '';
+        }
+
+        function confirmDeleteAll() {
+            const confirmValue = document.getElementById('deleteConfirmInput').value;
+            if (confirmValue === 'DELETE') {
+                cvData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                localStorage.removeItem('cvData');
+                isEditMode = false;
+                isAdmin = false;
+                localStorage.removeItem('adminSession');
+                closeDeleteModal();
+                renderAllSections();
+                updateUIMode();
+                showMessage('🗑️ Your CV has been completely wiped. Starting fresh!', 'success');
+            } else {
+                showMessage('❌ Please type DELETE to confirm', 'error');
+            }
+        }
+
+        function verifyPassword() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                isAdmin = true;
+                isEditMode = true;
+                localStorage.setItem('adminSession', 'true');
+                closePasswordModal();
+                renderAllSections();
+                updateUIMode();
+                showMessage('✨ Admin mode activated! Welcome back.', 'success');
+            } else {
+                document.getElementById('passwordError').textContent = '❌ Incorrect password. Try again.';
+                document.getElementById('passwordError').classList.remove('hidden');
+            }
+        }
+
+        function checkAdminStatus() {
+            if (localStorage.getItem('adminSession') === 'true') {
+                isAdmin = true;
+            }
+        }
+
+        // ==================== RENDERING ====================
+        function renderAllSections() {
+            renderPersonal();
+            renderAbout();
+            renderEducation();
+            renderSkills();
+            renderProjects();
+            renderLanguages();
+            renderHobbies();
+        }
+
+        function renderPersonal() {
+            const data = cvData.personal;
+            const profileImage = cvData.profileImage ? `<img src="${cvData.profileImage}" class="profile-image" alt="Profile">` : '';
+            const uploadBtn = isAdmin ? `
+                <label class="image-upload-label">
+                    📸 Upload Photo
+                    <input type="file" id="profileImageInput" accept="image/*" onchange="handleImageUpload(event)">
+                </label>
+            ` : '';
+
+            // Social links display for viewers
+            let socialLinksHTML = '';
+            if (data.linkedin || data.github) {
+                socialLinksHTML = '<div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">';
+                if (data.linkedin) {
+                    socialLinksHTML += `<a href="${escapeHtml(data.linkedin)}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: rgba(0, 119, 181, 0.2); border: 1px solid rgba(0, 119, 181, 0.4); color: #60a5fa; padding: 10px 16px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 13px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 119, 181, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 119, 181, 0.2)';" onmouseout="this.style.background='rgba(0, 119, 181, 0.2)'; this.style.boxShadow='';">🔗 LinkedIn</a>`;
+                }
+                if (data.github) {
+                    socialLinksHTML += `<a href="${escapeHtml(data.github)}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #e2e8f0; padding: 10px 16px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 13px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255, 255, 255, 0.15)'; this.style.boxShadow='0 0 15px rgba(255, 255, 255, 0.1)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.boxShadow='';">💻 GitHub</a>`;
+                }
+                socialLinksHTML += '</div>';
+            }
+
+            const viewHTML = `
+                <div class="profile-image-container">
+                    ${profileImage}
+                    ${uploadBtn}
+                </div>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value">${escapeHtml(data.fullName)}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Email</div>
+                        <div class="info-value"><a href="mailto:${escapeHtml(data.email)}" style="color: var(--primary); text-decoration: none;">${escapeHtml(data.email)}</a></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Phone</div>
+                        <div class="info-value"><a href="tel:${escapeHtml(data.phone)}" style="color: var(--primary); text-decoration: none;">${escapeHtml(data.phone)}</a></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Location</div>
+                        <div class="info-value">${escapeHtml(data.location)}</div>
+                    </div>
+                </div>
+                ${socialLinksHTML}
+            `;
+
+            const editHTML = `
+                <div class="profile-image-container">
+                    ${profileImage}
+                    <label class="image-upload-label">
+                        📸 Upload Photo
+                        <input type="file" id="profileImageInputEdit" accept="image/*" onchange="handleImageUpload(event)">
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="fullName" value="${escapeHtml(data.fullName)}">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" value="${escapeHtml(data.email)}">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="phone" value="${escapeHtml(data.phone)}">
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="location" value="${escapeHtml(data.location)}">
+                </div>
+                <div class="form-group">
+                    <label>LinkedIn Profile URL</label>
+                    <input type="text" id="linkedin" placeholder="https://linkedin.com/in/yourprofile" value="${escapeHtml(data.linkedin)}">
+                </div>
+                <div class="form-group">
+                    <label>GitHub Profile URL</label>
+                    <input type="text" id="github" placeholder="https://github.com/yourprofile" value="${escapeHtml(data.github)}">
+                </div>
+            `;
+
+            document.getElementById('personalView').innerHTML = viewHTML;
+            document.getElementById('personalEdit').innerHTML = editHTML;
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    cvData.profileImage = e.target.result;
+                    renderPersonal();
+                    showMessage('✨ Photo uploaded successfully!', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderAbout() {
+            const viewHTML = `<p style="line-height: 1.8; color: var(--text-secondary); font-size: 15px;">${escapeHtml(cvData.about)}</p>`;
+            const editHTML = `
+                <div class="form-group">
+                    <label>About Me</label>
+                    <textarea id="aboutText">${escapeHtml(cvData.about)}</textarea>
+                </div>
+            `;
+
+            document.getElementById('aboutView').innerHTML = viewHTML;
+            document.getElementById('aboutEdit').innerHTML = editHTML;
+        }
+
+        function renderEducation() {
+            let viewHTML = '';
+            if (cvData.education.length === 0) {
+                viewHTML = '<div class="section-placeholder">No education entries yet. Start adding your educational background! 🎓</div>';
+            } else {
+                cvData.education.forEach(edu => {
+                    viewHTML += `
+                        <div class="item">
+                            <h3>${escapeHtml(edu.school)}</h3>
+                            <div class="item-meta">${escapeHtml(edu.degree)} • ${escapeHtml(edu.year)}</div>
+                            <div class="item-description">${escapeHtml(edu.description)}</div>
+                            ${isAdmin ? `
+                                <div class="item-actions">
+                                    <button class="btn-edit" onclick="editEducation(${edu.id})">✏️ Edit</button>
+                                    <button class="btn-delete" onclick="deleteEducation(${edu.id})">🗑️ Delete</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('educationView').innerHTML = viewHTML;
+
+            if (isAdmin) {
+                document.getElementById('educationEdit').innerHTML = `
+                    <button class="add-btn" onclick="showAddEducationForm()">➕ Add Education</button>
+                    <div id="educationFormContainer"></div>
+                `;
+            }
+        }
+
+        function renderSkills() {
+            let viewHTML = '';
+            if (cvData.skills.length === 0) {
+                viewHTML = '<div class="section-placeholder">No skills added yet. Showcase your technical expertise! 💻</div>';
+            } else {
+                viewHTML = '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
+                cvData.skills.forEach(skill => {
+                    viewHTML += `
+                        <div class="skill-tag">
+                            ${escapeHtml(skill.name)}
+                            ${isAdmin ? `<button class="btn-delete" style="margin-left: 8px; padding: 0; background: none; border: none; color: inherit; cursor: pointer;" onclick="deleteSkill(${skill.id})">×</button>` : ''}
+                        </div>
+                    `;
+                });
+                viewHTML += '</div>';
+            }
+
+            document.getElementById('skillsView').innerHTML = viewHTML;
+
+            if (isAdmin) {
+                document.getElementById('skillsEdit').innerHTML = `
+                    <div class="form-group">
+                        <label>Skill Name</label>
+                        <input type="text" id="skillInput" placeholder="e.g., React, Python, AWS, Figma">
+                    </div>
+                    <button class="add-btn" onclick="addSkill()">➕ Add Skill</button>
+                `;
+            }
+        }
+
+        function renderProjects() {
+            let viewHTML = '';
+            if (cvData.projects.length === 0) {
+                viewHTML = '<div class="section-placeholder">No projects showcased yet. Share your amazing work! 🚀</div>';
+            } else {
+                cvData.projects.forEach(project => {
+                    viewHTML += `
+                        <div class="item">
+                            <h3>${escapeHtml(project.title)}</h3>
+                            <div class="item-meta">Tech: ${escapeHtml(project.technologies)}</div>
+                            <div class="item-description">${escapeHtml(project.description)}</div>
+                            ${isAdmin ? `
+                                <div class="item-actions">
+                                    <button class="btn-edit" onclick="editProject(${project.id})">✏️ Edit</button>
+                                    <button class="btn-delete" onclick="deleteProject(${project.id})">🗑️ Delete</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('projectsView').innerHTML = viewHTML;
+
+            if (isAdmin) {
+                document.getElementById('projectsEdit').innerHTML = `
+                    <button class="add-btn" onclick="showAddProjectForm()">➕ Add Project</button>
+                    <div id="projectFormContainer"></div>
+                `;
+            }
+        }
+
+        function renderLanguages() {
+            let viewHTML = '';
+            if (cvData.languages.length === 0) {
+                viewHTML = '<div class="section-placeholder">No languages added yet. Showcase your linguistic skills! 🌐</div>';
+            } else {
+                cvData.languages.forEach(lang => {
+                    viewHTML += `
+                        <div class="item">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h3>${escapeHtml(lang.name)}</h3>
+                                    <div class="item-meta">Proficiency: ${escapeHtml(lang.level)}</div>
+                                </div>
+                                ${isAdmin ? `
+                                    <button class="btn-delete" onclick="deleteLanguage(${lang.id})" style="margin-top: 0;">🗑️</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('languagesView').innerHTML = viewHTML;
+
+            if (isAdmin) {
+                document.getElementById('languagesEdit').innerHTML = `
+                    <div class="form-group">
+                        <label>Language Name</label>
+                        <input type="text" id="langName" placeholder="e.g., English, French, Mandarin">
+                    </div>
+                    <div class="form-group">
+                        <label>Proficiency Level</label>
+                        <select id="langLevel">
+                            <option value="Native">🌟 Native</option>
+                            <option value="Fluent">💬 Fluent</option>
+                            <option value="Intermediate">📚 Intermediate</option>
+                            <option value="Beginner">🌱 Beginner</option>
+                        </select>
+                    </div>
+                    <button class="add-btn" onclick="addLanguage()">➕ Add Language</button>
+                `;
+            }
+        }
+
+        function renderHobbies() {
+            let viewHTML = '';
+            if (cvData.hobbies.length === 0) {
+                viewHTML = '<div class="section-placeholder">No hobbies added yet. Share what you love! 🎨</div>';
+            } else {
+                viewHTML = '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
+                cvData.hobbies.forEach(hobby => {
+                    viewHTML += `
+                        <div class="hobby-tag">
+                            ${escapeHtml(hobby.name)}
+                            ${isAdmin ? `<button class="btn-delete" style="margin-left: 8px; padding: 0; background: none; border: none; color: inherit; cursor: pointer;" onclick="deleteHobby(${hobby.id})">×</button>` : ''}
+                        </div>
+                    `;
+                });
+                viewHTML += '</div>';
+            }
+
+            document.getElementById('hobbiesView').innerHTML = viewHTML;
+
+            if (isAdmin) {
+                document.getElementById('hobbiesEdit').innerHTML = `
+                    <div class="form-group">
+                        <label>Hobby or Interest</label>
+                        <input type="text" id="hobbyInput" placeholder="e.g., Photography, Gaming, Cooking, Music">
+                    </div>
+                    <button class="add-btn" onclick="addHobby()">➕ Add Hobby</button>
+                `;
+            }
+        }
+
+        // ==================== EDIT FUNCTIONS ====================
+        function updateUIMode() {
+            const editBtn = document.getElementById('editModeBtn');
+            const saveBtn = document.getElementById('saveModeBtn');
+            const deleteBtn = document.getElementById('deleteAllBtn');
+            const adminBadge = document.getElementById('adminBadge');
+            const views = document.querySelectorAll('[id$="View"]');
+            const edits = document.querySelectorAll('[id$="Edit"]');
+
+            if (isEditMode && isAdmin) {
+                editBtn.classList.add('hidden');
+                saveBtn.classList.remove('hidden');
+                deleteBtn.classList.remove('hidden');
+                adminBadge.classList.remove('hidden');
+                views.forEach(v => v.classList.add('hidden'));
+                edits.forEach(e => e.classList.remove('hidden'));
+                document.body.style.background = 'linear-gradient(135deg, rgba(10, 14, 39, 0.95), rgba(26, 31, 58, 0.95))';
+            } else {
+                editBtn.classList.remove('hidden');
+                saveBtn.classList.add('hidden');
+                deleteBtn.classList.add('hidden');
+                adminBadge.classList.add('hidden');
+                views.forEach(v => v.classList.remove('hidden'));
+                edits.forEach(e => e.classList.add('hidden'));
+                document.body.style.background = 'var(--dark-bg)';
+            }
+        }
+
+        function saveAndLock() {
+            cvData.personal = {
+                fullName: document.getElementById('fullName').value || 'John Doe',
+                email: document.getElementById('email').value || 'john@example.com',
+                phone: document.getElementById('phone').value || '+1 (555) 123-4567',
+                location: document.getElementById('location').value || 'New York, USA',
+                linkedin: document.getElementById('linkedin').value || '',
+                github: document.getElementById('github').value || ''
+            };
+
+            cvData.about = document.getElementById('aboutText').value || 'No description provided';
+
+            localStorage.setItem('cvData', JSON.stringify(cvData));
+            isEditMode = false;
+            isAdmin = false;
+            localStorage.removeItem('adminSession');
+            renderAllSections();
+            updateUIMode();
+            showMessage('✨ All changes saved and locked! Your CV is ready to share.', 'success');
+        }
+
+        // Education Management
+        function editEducation(id) {
+            const edu = cvData.education.find(e => e.id === id);
+            const form = `
+                <div class="form-group" id="eduForm-${id}">
+                    <label>School/University</label>
+                    <input type="text" value="${escapeHtml(edu.school)}" onchange="updateEducationField(${id}, 'school', this.value)">
+                    <label>Degree</label>
+                    <input type="text" value="${escapeHtml(edu.degree)}" onchange="updateEducationField(${id}, 'degree', this.value)">
+                    <label>Year</label>
+                    <input type="text" value="${escapeHtml(edu.year)}" onchange="updateEducationField(${id}, 'year', this.value)">
+                    <label>Description</label>
+                    <textarea onchange="updateEducationField(${id}, 'description', this.value)">${escapeHtml(edu.description)}</textarea>
+                </div>
+            `;
+            document.getElementById('educationFormContainer').innerHTML = form;
+        }
+
+        function deleteEducation(id) {
+            if (confirm('Are you sure you want to delete this education entry?')) {
+                cvData.education = cvData.education.filter(e => e.id !== id);
+                renderEducation();
+                showMessage('✨ Education deleted!', 'success');
+            }
+        }
+
+        function updateEducationField(id, field, value) {
+            const edu = cvData.education.find(e => e.id === id);
+            if (edu) edu[field] = value;
+        }
+
+        function showAddEducationForm() {
+            const newId = Math.max(...cvData.education.map(e => e.id), 0) + 1;
+            const form = `
+                <div class="form-group" id="newEduForm">
+                    <label>School/University</label>
+                    <input type="text" id="newEduSchool" placeholder="Enter school name">
+                    <label>Degree</label>
+                    <input type="text" id="newEduDegree" placeholder="e.g., Bachelor of Computer Science">
+                    <label>Year</label>
+                    <input type="text" id="newEduYear" placeholder="e.g., 2020 - 2024">
+                    <label>Description</label>
+                    <textarea id="newEduDesc" placeholder="Tell us about your studies..."></textarea>
+                    <button class="btn-primary" onclick="confirmAddEducation(${newId})">Save Education</button>
+                </div>
+            `;
+            document.getElementById('educationFormContainer').innerHTML = form;
+        }
+
+        function confirmAddEducation(id) {
+            const school = document.getElementById('newEduSchool').value || 'University';
+            const degree = document.getElementById('newEduDegree').value || 'Degree';
+            const year = document.getElementById('newEduYear').value || '2023 - 2024';
+            const description = document.getElementById('newEduDesc').value || 'Description';
+
+            cvData.education.push({ id, school, degree, year, description });
+            renderEducation();
+            showMessage('✨ Education added!', 'success');
+        }
+
+        // Skills Management
+        function addSkill() {
+            const skillName = document.getElementById('skillInput').value.trim();
+            if (skillName) {
+                const newId = Math.max(...cvData.skills.map(s => s.id), 0) + 1;
+                cvData.skills.push({ id: newId, name: skillName });
+                renderSkills();
+                document.getElementById('skillInput').value = '';
+                showMessage('✨ Skill added!', 'success');
+            }
+        }
+
+        function deleteSkill(id) {
+            cvData.skills = cvData.skills.filter(s => s.id !== id);
+            renderSkills();
+            showMessage('✨ Skill removed!', 'success');
+        }
+
+        // Projects Management
+        function editProject(id) {
+            const project = cvData.projects.find(p => p.id === id);
+            const form = `
+                <div class="form-group" id="projForm-${id}">
+                    <label>Project Title</label>
+                    <input type="text" value="${escapeHtml(project.title)}" onchange="updateProjectField(${id}, 'title', this.value)">
+                    <label>Description</label>
+                    <textarea onchange="updateProjectField(${id}, 'description', this.value)">${escapeHtml(project.description)}</textarea>
+                    <label>Technologies</label>
+                    <input type="text" value="${escapeHtml(project.technologies)}" onchange="updateProjectField(${id}, 'technologies', this.value)">
+                </div>
+            `;
+            document.getElementById('projectFormContainer').innerHTML = form;
+        }
+
+        function deleteProject(id) {
+            if (confirm('Are you sure you want to delete this project?')) {
+                cvData.projects = cvData.projects.filter(p => p.id !== id);
+                renderProjects();
+                showMessage('✨ Project deleted!', 'success');
+            }
+        }
+
+        function updateProjectField(id, field, value) {
+            const project = cvData.projects.find(p => p.id === id);
+            if (project) project[field] = value;
+        }
+
+        function showAddProjectForm() {
+            const newId = Math.max(...cvData.projects.map(p => p.id), 0) + 1;
+            const form = `
+                <div class="form-group" id="newProjForm">
+                    <label>Project Title</label>
+                    <input type="text" id="newProjTitle" placeholder="Name your project">
+                    <label>Description</label>
+                    <textarea id="newProjDesc" placeholder="What's your project about?"></textarea>
+                    <label>Technologies</label>
+                    <input type="text" id="newProjTech" placeholder="e.g., React, Node.js, MongoDB">
+                    <button class="btn-primary" onclick="confirmAddProject(${newId})">Save Project</button>
+                </div>
+            `;
+            document.getElementById('projectFormContainer').innerHTML = form;
+        }
+
+        function confirmAddProject(id) {
+            const title = document.getElementById('newProjTitle').value || 'New Project';
+            const description = document.getElementById('newProjDesc').value || 'Project description';
+            const technologies = document.getElementById('newProjTech').value || 'Technologies';
+
+            cvData.projects.push({ id, title, description, technologies });
+            renderProjects();
+            showMessage('✨ Project added!', 'success');
+        }
+
+        // Languages Management
+        function addLanguage() {
+            const langName = document.getElementById('langName').value.trim();
+            const langLevel = document.getElementById('langLevel').value;
+            if (langName) {
+                const newId = Math.max(...cvData.languages.map(l => l.id), 0) + 1;
+                cvData.languages.push({ id: newId, name: langName, level: langLevel });
+                renderLanguages();
+                document.getElementById('langName').value = '';
+                showMessage('✨ Language added!', 'success');
+            }
+        }
+
+        function deleteLanguage(id) {
+            cvData.languages = cvData.languages.filter(l => l.id !== id);
+            renderLanguages();
+            showMessage('✨ Language removed!', 'success');
+        }
+
+        // Hobbies Management
+        function addHobby() {
+            const hobbyName = document.getElementById('hobbyInput').value.trim();
+            if (hobbyName) {
+                const newId = Math.max(...cvData.hobbies.map(h => h.id), 0) + 1;
+                cvData.hobbies.push({ id: newId, name: hobbyName });
+                renderHobbies();
+                document.getElementById('hobbyInput').value = '';
+                showMessage('✨ Hobby added!', 'success');
+            }
+        }
+
+        function deleteHobby(id) {
+            cvData.hobbies = cvData.hobbies.filter(h => h.id !== id);
+            renderHobbies();
+            showMessage('✨ Hobby removed!', 'success');
+        }
+
+        // ==================== UTILITIES ====================
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showMessage(message, type) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `${type}-message`;
+            msgDiv.textContent = message;
+            msgDiv.style.position = 'fixed';
+            msgDiv.style.top = '20px';
+            msgDiv.style.right = '20px';
+            msgDiv.style.zIndex = '3000';
+            msgDiv.style.maxWidth = '300px';
+            document.body.appendChild(msgDiv);
+            setTimeout(() => msgDiv.remove(), 3500);
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
